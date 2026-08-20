@@ -86,7 +86,7 @@ theorem measurableSet_vectorCrossing (boundary : Fin K → Real) :
       ⋃ i, {z : Fin K → Real | boundary i ≤ z i} by ext z; simp]
   exact MeasurableSet.iUnion fun i ↦ measurableSet_le measurable_const (measurable_pi_apply i)
 
-/-- Theorem 4(iii): adaptive cumulative statistics retain type-I-error control for every stopping
+/-- Theorem 4(iii): adaptive cumulative statistics retain type I error control for every stopping
 rule.  The proof transfers full-boundary calibration by identical distribution and then applies
 Theorem 1; no joint-distribution assumption involving the stopping rule is needed. -/
 theorem theorem_four_iii (mu : Measure Omega) (nu : Measure OmegaPlanned)

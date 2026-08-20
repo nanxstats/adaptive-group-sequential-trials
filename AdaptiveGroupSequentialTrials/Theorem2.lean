@@ -33,7 +33,7 @@ def crossingBy (Z : Fin K → Omega → Real) (boundary : Fin K → Real → Rea
     (level : Real) (k : Fin K) : Set Omega :=
   {omega | ∃ i, i ≤ k ∧ boundary i level ≤ Z i omega}
 
-/-- The spent type-I-error level at look `k`. -/
+/-- The spent type I error level at look `k`. -/
 def spentLevel (mu : Measure Omega) (Z : Fin K → Omega → Real)
     (boundary : Fin K → Real → Real) (level : Real) (k : Fin K) : ENNReal :=
   mu (crossingBy Z boundary level k)

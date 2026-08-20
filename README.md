@@ -16,10 +16,10 @@ imports the formalizations of all five numbered theorems in the paper and supple
 
 | Result | Lean module | Coverage |
 | --- | --- | --- |
-| Theorem 1 | [`Theorem1.lean`](AdaptiveGroupSequentialTrials/Theorem1.lean) | The extended rejection event is contained in the full crossing event, giving type-I-error control for every stopping rule. |
+| Theorem 1 | [`Theorem1.lean`](AdaptiveGroupSequentialTrials/Theorem1.lean) | The extended rejection event is contained in the full crossing event, giving type I error control for every stopping rule. |
 | Theorem 2(i)--(vi) | [`Theorem2.lean`](AdaptiveGroupSequentialTrials/Theorem2.lean) | Boundary inversion, spent-level calibration, monotonic sequential p-values, stopped p-value validity, and almost-sure uniqueness. |
 | Theorem 3(i)--(iv) | [`Theorem3.lean`](AdaptiveGroupSequentialTrials/Theorem3.lean) | Test inversion, fixed-look coverage, monotonic lower bounds, stopped coverage, and the null false-rejection corollary. |
-| Theorem 4(i)--(iii) | [`Theorem4.lean`](AdaptiveGroupSequentialTrials/Theorem4.lean) | Independence and identical distribution of adaptive Gaussian statistics, followed by stopped type-I-error control. |
+| Theorem 4(i)--(iii) | [`Theorem4.lean`](AdaptiveGroupSequentialTrials/Theorem4.lean) | Independence and identical distribution of adaptive Gaussian statistics, followed by stopped type I error control. |
 | Theorem 5(i)--(ii) | [`Theorem5.lean`](AdaptiveGroupSequentialTrials/Theorem5.lean) | Unbiasedness under finite adaptive selection and predictable variance-spending weights. |
 
 [`FiniteHorizon.lean`](AdaptiveGroupSequentialTrials/FiniteHorizon.lean) contains the reusable
@@ -49,13 +49,10 @@ supplement have themselves been formalized here.
 
 ## Dependency policy
 
-The files import narrow Mathlib modules directly. In particular, Theorem 1 now imports only
-`Mathlib.MeasureTheory.Measure.MeasureSpace`; it does not import an unrelated statistics module.
-
-StatsMLlib is used only in Theorem 4, via
-`StatsMLlib.Probability.Gaussian.Basic`. That module provides `stdGaussianPi`, the canonical finite
-product of independent standard Gaussians needed to state the adaptive joint-law interface. The
-other four theorem files use Mathlib alone.
+StatsMLlib is used only in Theorem 4, via `StatsMLlib.Probability.Gaussian.Basic`.
+That module provides `stdGaussianPi`, the canonical finite product of
+independent standard Gaussians needed to state the adaptive joint-law interface.
+The other four theorem files use Mathlib alone.
 
 ## Toolchain and build
 

@@ -13,7 +13,7 @@ for those times; Lean index `i` corresponds to analysis time `i + 1` in the pape
 
 The mathematical core is independent of the joint distribution of the statistics: crossing a
 boundary at or before stopping implies crossing a boundary at some point in the full design.
-Monotonicity of a measure then gives type-I-error control.  Consequently the result below is
+Monotonicity of a measure then gives type I error control.  Consequently the result below is
 slightly stronger than the paper's statement: neither Gaussian assumptions nor measurability of
 the stopping rule is needed for the set containment and measure inequality.
 -/
