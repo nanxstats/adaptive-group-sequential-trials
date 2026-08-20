@@ -5,13 +5,20 @@ import Mathlib.Probability.Independence.Integration
 # Adaptive unbiased estimation
 
 This file formalizes Theorem 5 for finite sets of candidate sample sizes and trial stages.  The
-paper cites Liu, Proschan, and Pledger (2002) for the fact that predictable sample-size selection
+paper cites Liu, Proschan, and Pledger (2002) for the fact that predictable sample size selection
 preserves unbiasedness.  Here that dependency is expressed by independence between each one-hot
 selection decision and its candidate estimator.  This is the finite-choice form of the independent
 cohort assumption used in the supplement.
 
 For part (ii), `effectiveWeight i` is the paper's `w_i` before stopping and zero afterward.  Thus a
-sum over all finite stages is definitionally the paper's stopped sum through `tau`.
+sum over all finite stages is definitionally the paper's stopped sum through `tau`.  The
+independence hypothesis of part (ii) pairs the composite weight
+`effectiveWeight i * selectionWeight (selection i) m` with the candidate estimator
+`candidate i m`: in the paper's filtration both the weight and the sample size decision are
+functions of past data while each candidate comes from the new, independent stage cohort, so this
+composite independence is exactly what the model supplies.  Independence between the weight and the
+*selected* estimator would be strictly stronger and generally fails under sample size adaptation,
+because the selected estimator and the weight are correlated through the sample size choice.
 -/
 
 open Finset MeasureTheory ProbabilityTheory Set
@@ -94,15 +101,63 @@ theorem theorem_five_i {M : Type*} [Fintype M] [DecidableEq M] [MeasurableSpace 
   · intro omega
     simp [selectionWeight]
 
-/-- Theorem 5(ii): the effective stopped weights yield an unbiased overall estimator. -/
-theorem theorem_five_ii {K : Nat} (mu : Measure Omega) [IsProbabilityMeasure mu]
-    (theta : Real) (effectiveWeight stageEstimate : Fin K → Omega → Real)
+/-- Theorem 5(ii): at the stopping time, the variance-spending weighted sum of the adaptively
+selected stage estimators is unbiased.
+
+The overall estimator is `∑ i, effectiveWeight i * adaptiveEstimator (selection i) (candidate i)`,
+the paper's `∑_{k ≤ τ} w_k Δ̂_{k, ñ_k}`.  The proof reindexes it over stage-and-candidate pairs so
+that each composite weight `effectiveWeight i * selectionWeight (selection i) m`, a function of
+past data in the paper's filtration, faces its independent new-cohort candidate `candidate i m`. -/
+theorem theorem_five_ii {K : Nat} {M : Type*} [Fintype M] [DecidableEq M] [MeasurableSpace M]
+    [MeasurableSingletonClass M] (mu : Measure Omega) [IsProbabilityMeasure mu]
+    (theta : Real) (effectiveWeight : Fin K → Omega → Real)
+    (selection : Fin K → Omega → M) (candidate : Fin K → M → Omega → Real)
     (weight_integrable : ∀ i, Integrable (effectiveWeight i) mu)
-    (stage_unbiased : ∀ i, Unbiased mu theta (stageEstimate i))
-    (predictable_independence : ∀ i, effectiveWeight i ⟂ᵢ[mu] stageEstimate i)
+    (selection_measurable : ∀ i, Measurable (selection i))
+    (candidate_unbiased : ∀ i m, Unbiased mu theta (candidate i m))
+    (predictable_independence : ∀ i m,
+      (fun omega ↦ effectiveWeight i omega * selectionWeight (selection i) m omega)
+        ⟂ᵢ[mu] candidate i m)
     (variance_spent : ∀ omega, ∑ i, effectiveWeight i omega = 1) :
-    Unbiased mu theta (weightedEstimator effectiveWeight stageEstimate) := by
-  exact weightedEstimator_unbiased mu theta effectiveWeight stageEstimate weight_integrable
-    stage_unbiased predictable_independence variance_spent
+    Unbiased mu theta
+      (weightedEstimator effectiveWeight
+        (fun i ↦ adaptiveEstimator (selection i) (candidate i))) := by
+  have composite_integrable (i : Fin K) (m : M) : Integrable
+      (fun omega ↦ effectiveWeight i omega * selectionWeight (selection i) m omega) mu := by
+    have hmeas : Measurable (selectionWeight (selection i) m) :=
+      Measurable.ite ((measurableSet_singleton m).preimage (selection_measurable i))
+        measurable_const measurable_const
+    have hbound : ∀ omega, ‖selectionWeight (selection i) m omega‖ ≤ 1 := by
+      intro omega
+      simp only [selectionWeight]
+      split <;> simp
+    exact (weight_integrable i).mul_bdd hmeas.aestronglyMeasurable
+      (Filter.Eventually.of_forall hbound)
+  have h := weightedEstimator_unbiased (I := Fin K × M) mu theta
+    (fun p omega ↦ effectiveWeight p.1 omega * selectionWeight (selection p.1) p.2 omega)
+    (fun p omega ↦ candidate p.1 p.2 omega)
+    (fun p ↦ composite_integrable p.1 p.2)
+    (fun p ↦ candidate_unbiased p.1 p.2)
+    (fun p ↦ predictable_independence p.1 p.2)
+    (fun omega ↦ by
+      rw [Fintype.sum_prod_type]
+      calc
+        ∑ i, ∑ m, effectiveWeight i omega * selectionWeight (selection i) m omega =
+            ∑ i, effectiveWeight i omega := by
+          refine Finset.sum_congr rfl fun i _ ↦ ?_
+          simp [selectionWeight, mul_ite, Finset.sum_ite_eq]
+        _ = 1 := variance_spent omega)
+  have hfun : weightedEstimator
+      (fun (p : Fin K × M) omega ↦
+        effectiveWeight p.1 omega * selectionWeight (selection p.1) p.2 omega)
+      (fun p omega ↦ candidate p.1 p.2 omega) =
+      weightedEstimator effectiveWeight
+        (fun i ↦ adaptiveEstimator (selection i) (candidate i)) := by
+    funext omega
+    rw [weightedEstimator, weightedEstimator, Fintype.sum_prod_type]
+    refine Finset.sum_congr rfl fun i _ ↦ ?_
+    rw [adaptiveEstimator, weightedEstimator, Finset.mul_sum]
+    exact Finset.sum_congr rfl fun m _ ↦ mul_assoc _ _ _
+  rwa [hfun] at h
 
 end AdaptiveGroupSequentialTrials

@@ -10,6 +10,12 @@ inverting a continuous, decreasing boundary.  `stageP` records that inverse, whi
 `stageP_inverts_boundary` is the exact order property supplied by the analytic `sup` construction.
 Keeping that fact explicit separates the real-analysis question of boundary inversion from the
 finite-horizon probability argument.
+
+The inversion is stated for significance levels in the open interval `(0, 1)`, exactly as in the
+paper.  This restriction is essential, not cosmetic: a well-ordered boundary class diverges as the
+level tends to zero, so once a test statistic is unbounded above no real-valued boundary function
+can satisfy the inversion at nonpositive levels, and demanding it at every real level would make
+the hypotheses unsatisfiable in the paper's Gaussian models.
 -/
 
 open MeasureTheory Set
@@ -40,20 +46,20 @@ def spentLevel (mu : Measure Omega) (Z : Fin K → Omega → Real)
 
 omit [MeasurableSpace Omega] in
 /-- Theorem 2(i): a sequential p-value is below `level` exactly when a corresponding boundary has
-been crossed by that analysis. -/
+been crossed by that analysis, for any level in the paper's interior range `(0, 1)`. -/
 theorem theorem_two_i (stageP : Fin K → Omega → Real) (Z : Fin K → Omega → Real)
     (boundary : Fin K → Real → Real)
-    (stageP_inverts_boundary : ∀ omega i level,
-      stageP i omega ≤ level ↔ boundary i level ≤ Z i omega)
-    (k : Fin K) (omega : Omega) (level : Real) :
+    (stageP_inverts_boundary : ∀ omega i, ∀ level ∈ Ioo (0 : Real) 1,
+      (stageP i omega ≤ level ↔ boundary i level ≤ Z i omega))
+    (k : Fin K) (omega : Omega) (level : Real) (hlevel : level ∈ Ioo (0 : Real) 1) :
     sequentialPValue stageP k omega ≤ level ↔ omega ∈ crossingBy Z boundary level k := by
   rw [sequentialPValue, cumulativeMin_le_iff]
   simp only [crossingBy, mem_ofPred_eq]
   constructor
   · rintro ⟨i, hi, hp⟩
-    exact ⟨i, hi, (stageP_inverts_boundary omega i level).mp hp⟩
+    exact ⟨i, hi, (stageP_inverts_boundary omega i level hlevel).mp hp⟩
   · rintro ⟨i, hi, hcross⟩
-    exact ⟨i, hi, (stageP_inverts_boundary omega i level).mpr hcross⟩
+    exact ⟨i, hi, (stageP_inverts_boundary omega i level hlevel).mpr hcross⟩
 
 omit [MeasurableSpace Omega] in
 theorem crossingBy_subset_full (Z : Fin K → Omega → Real)
@@ -67,9 +73,9 @@ spent level is at most the full-design level.  The equality strengthens the pape
 inequality and agrees with its supplementary proof. -/
 theorem theorem_two_ii (mu : Measure Omega) (stageP : Fin K → Omega → Real)
     (Z : Fin K → Omega → Real) (boundary : Fin K → Real → Real)
-    (stageP_inverts_boundary : ∀ omega i level,
-      stageP i omega ≤ level ↔ boundary i level ≤ Z i omega)
-    (k : Fin K) (level : Real)
+    (stageP_inverts_boundary : ∀ omega i, ∀ level ∈ Ioo (0 : Real) 1,
+      (stageP i omega ≤ level ↔ boundary i level ≤ Z i omega))
+    (k : Fin K) (level : Real) (hlevel : level ∈ Ioo (0 : Real) 1)
     (full_calibration : mu (fullCrossingEvent Z (fun i ↦ boundary i level)) =
       ENNReal.ofReal level) :
     mu {omega | sequentialPValue stageP k omega ≤ level} =
@@ -78,7 +84,7 @@ theorem theorem_two_ii (mu : Measure Omega) (stageP : Fin K → Omega → Real)
   constructor
   · congr 1
     ext omega
-    exact theorem_two_i stageP Z boundary stageP_inverts_boundary k omega level
+    exact theorem_two_i stageP Z boundary stageP_inverts_boundary k omega level hlevel
   · calc
       spentLevel mu Z boundary level k ≤
           mu (fullCrossingEvent Z (fun i ↦ boundary i level)) :=
@@ -96,20 +102,20 @@ omit [MeasurableSpace Omega] in
 /-- Theorem 2(iv): the final p-value event is the extended rejection event at `level`. -/
 theorem theorem_two_iv (stageP : Fin K → Omega → Real) (Z : Fin K → Omega → Real)
     (boundary : Fin K → Real → Real) (tau : Omega → Fin K)
-    (stageP_inverts_boundary : ∀ omega i level,
-      stageP i omega ≤ level ↔ boundary i level ≤ Z i omega)
-    (omega : Omega) (level : Real) :
+    (stageP_inverts_boundary : ∀ omega i, ∀ level ∈ Ioo (0 : Real) 1,
+      (stageP i omega ≤ level ↔ boundary i level ≤ Z i omega))
+    (omega : Omega) (level : Real) (hlevel : level ∈ Ioo (0 : Real) 1) :
     finalPValue stageP tau omega ≤ level ↔
       omega ∈ extendedRejectionEvent Z (fun i ↦ boundary i level) tau := by
-  exact theorem_two_i stageP Z boundary stageP_inverts_boundary (tau omega) omega level
+  exact theorem_two_i stageP Z boundary stageP_inverts_boundary (tau omega) omega level hlevel
 
 /-- Theorem 2(v): the p-value at any stopping rule remains valid. -/
 theorem theorem_two_v (mu : Measure Omega) (stageP : Fin K → Omega → Real)
     (Z : Fin K → Omega → Real) (boundary : Fin K → Real → Real)
     (tau : Omega → Fin K)
-    (stageP_inverts_boundary : ∀ omega i level,
-      stageP i omega ≤ level ↔ boundary i level ≤ Z i omega)
-    (level : Real)
+    (stageP_inverts_boundary : ∀ omega i, ∀ level ∈ Ioo (0 : Real) 1,
+      (stageP i omega ≤ level ↔ boundary i level ≤ Z i omega))
+    (level : Real) (hlevel : level ∈ Ioo (0 : Real) 1)
     (full_calibration : mu (fullCrossingEvent Z (fun i ↦ boundary i level)) =
       ENNReal.ofReal level) :
     mu {omega | finalPValue stageP tau omega ≤ level} ≤ ENNReal.ofReal level := by
@@ -118,7 +124,7 @@ theorem theorem_two_v (mu : Measure Omega) (stageP : Fin K → Omega → Real)
         mu (extendedRejectionEvent Z (fun i ↦ boundary i level) tau) := by
       congr 1
       ext omega
-      exact theorem_two_iv stageP Z boundary tau stageP_inverts_boundary omega level
+      exact theorem_two_iv stageP Z boundary tau stageP_inverts_boundary omega level hlevel
     _ ≤ ENNReal.ofReal level :=
       theorem_one_ofReal mu level Z (fun i ↦ boundary i level) tau full_calibration
 
@@ -147,8 +153,8 @@ interior level agrees almost surely with the sequentially defined final p-value.
 theorem theorem_two_vi (mu : Measure Omega) (stageP : Fin K → Omega → Real)
     (Z : Fin K → Omega → Real)
     (boundary : Fin K → Real → Real) (tau : Omega → Fin K) (pPrime : Omega → Real)
-    (stageP_inverts_boundary : ∀ omega i level,
-      stageP i omega ≤ level ↔ boundary i level ≤ Z i omega)
+    (stageP_inverts_boundary : ∀ omega i, ∀ level ∈ Ioo (0 : Real) 1,
+      (stageP i omega ≤ level ↔ boundary i level ≤ Z i omega))
     (hfinal : ∀ᵐ omega ∂mu, finalPValue stageP tau omega ∈ Icc 0 1)
     (hprime : ∀ᵐ omega ∂mu, pPrime omega ∈ Icc 0 1)
     (hsame_tests : ∀ᵐ omega ∂mu, ∀ level ∈ Ioo (0 : Real) 1,
@@ -159,6 +165,6 @@ theorem theorem_two_vi (mu : Measure Omega) (stageP : Fin K → Omega → Real)
   apply eq_of_Icc_of_sublevel_iff hprimeOmega hfinalOmega
   intro level hlevel
   exact (htests level hlevel).trans
-    (theorem_two_iv stageP Z boundary tau stageP_inverts_boundary omega level).symm
+    (theorem_two_iv stageP Z boundary tau stageP_inverts_boundary omega level hlevel).symm
 
 end AdaptiveGroupSequentialTrials
