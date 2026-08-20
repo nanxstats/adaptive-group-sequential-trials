@@ -32,8 +32,11 @@ The development contains no `sorry`, `admit`, or project-defined axioms.
 The Lean statements make dependencies that are implicit or external in the article explicit:
 
 - Theorem 2 isolates the analytic inversion of the paper's `sup` definition as
-  `stageP_inverts_boundary`. All six finite-horizon and probability conclusions are then derived
-  from that exact order equivalence.
+  `stageP_inverts_boundary`, stated for significance levels in the open interval `(0, 1)` exactly
+  as in the paper. The restriction matters: a well-ordered boundary diverges as the level tends to
+  zero, so for statistics that are unbounded above no real-valued boundary can satisfy the
+  inversion at nonpositive levels. All six finite-horizon and probability conclusions are then
+  derived from that exact order equivalence.
 - Theorem 3 assumes positive square-root information levels and equation (7), just as the paper
   does. Measurability of the test statistics and stopping fibers is stated where complements are
   assigned probabilities.
@@ -42,7 +45,12 @@ The Lean statements make dependencies that are implicit or external in the artic
   vector has the finite product standard-Gaussian law. Parts (i)--(iii) are proved from it.
 - Theorem 5(i) uses a finite-choice version of the independent-cohort argument: each one-hot sample
   size decision is independent of its candidate estimator. In part (ii), `effectiveWeight` means
-  the paper's predictable weight before stopping and zero afterward.
+  the paper's predictable weight before stopping and zero afterward, and the overall estimator is
+  the stopped weighted sum of the adaptively selected stage estimators. Independence is assumed
+  between each composite weight (effective weight times one-hot sample size decision) and its
+  new-cohort candidate estimator, which is the pairing the paper's filtration supplies; the
+  selected estimator itself is generally correlated with the weight under sample size adaptation,
+  so no independence involving it is assumed.
 
 These interfaces avoid claiming that results from papers outside the supplied source and
 supplement have themselves been formalized here.
